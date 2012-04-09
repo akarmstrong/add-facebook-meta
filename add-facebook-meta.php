@@ -117,6 +117,7 @@ class AddFacebookMeta {
 				$image_url = get_the_post_thumbnail( $post->ID, 'large' );
 				
 			// Scrape from post - Did use attachments, but what you attach isn't always what you end up using!
+			// Source: http://www.wprecipes.com/how-to-get-the-first-image-from-the-post-and-display-it
 			} else {
                                 $output = preg_match_all('/<img.+src=[\'"]([^\'"]+)[\'"].*>/i', $post->post_content, $matches);
                                 $image_url = $matches [1] [0];
