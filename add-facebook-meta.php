@@ -49,10 +49,8 @@ class AddFacebookMeta {
 	
 	    // Define constants used throughout the plugin
 	    $this->init_plugin_constants();
-		
-		$this->init_admin();
-		
-		add_action( 'wp_head', array( $this, 'add_facebook_meta' ), 1 );
+			
+	    add_action( 'wp_head', array( $this, 'add_facebook_meta' ), 1 );
 
 	} // end constructor
 	
@@ -109,33 +107,24 @@ class AddFacebookMeta {
 
 	private function get_meta_image() {
 		global $post;
-		$image_url = self::default_image_url;
+		$image_url = null;
+
+		// Post or page
 		if( is_single() || is_page () ){
 		
-			// Try to get a thumbnail
-			if( has_post_thumbnail() ){
-				$image_url = get_the_post_thumbnail( $post->ID, array( 200, 200 ) );
+			// Try to get a thumbnail - Featured image
+			if( has_post_thumbnail( $post->ID ) ){
+				$image_url = get_the_post_thumbnail( $post->ID, 'large' );
 				
-			// Try to get an attachment
+			// Scrape from post - Did use attachments, but what you attach isn't always what you end up using!
 			} else {
-				$args = array(
-					'numberposts' => 1,
-					'order'=> 'ASC',
-					'post_mime_type' => 'image',
-					'post_parent' => $post->ID,
-					'post_status' => null,
-					'post_type' => 'attachment'
-				);
-					
-				$attachments = get_children( $args );
-
-				if ($attachments) {
-					// Pop off the first one we got
-					$attachment = array_shift( $attachments );
-					$image_attributes = wp_get_attachment_image_src( $attachment->ID, 'medium' );
-					$image_url = array_shift( $image_attributes );
-				}
+                                $output = preg_match_all('/<img.+src=[\'"]([^\'"]+)[\'"].*>/i', $post->post_content, $matches);
+                                $image_url = $matches [1] [0];
 			}
+		}
+		// Either home or didn't get anything to use as an image - use default
+		if( ! $image_url ){
+			$image_url = self::default_image_url;
 		}
 		return $image_url;
 
@@ -193,16 +182,7 @@ class AddFacebookMeta {
 	} // end init_plugin_constants
 	
 	
-	private function init_admin(){
-		if ( is_admin() ){ // admin actions
-		  add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
-		  add_action( 'admin_init', array( $this, 'add_settings' ) );
-		}
-	}
-	
-	
-	
-	
+
 	
 	
 
